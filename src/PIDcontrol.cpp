@@ -224,7 +224,7 @@ void go_to(double x, double y)
     go_to(closest.at(0)+1, closest.at(1));
   }else
   {
-    go_to(closest.at(0), closest.at(1)+1);
+    go_to(closest.at(0), closest.at(1)-1);
   }
  }
 

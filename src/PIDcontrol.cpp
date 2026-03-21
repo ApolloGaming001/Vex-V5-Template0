@@ -29,11 +29,6 @@ std::vector<std::vector<double>> objects = {
   {3.5,3}
 };
 
-std::vector<std::vector<double>> walls = {
-  {0,3},
-  {0,6}
-};
-
 double clamp(double val, double minVal, double maxVal) {
   return fmax(minVal, fmin(val, maxVal));
 }

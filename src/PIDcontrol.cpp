@@ -1,7 +1,6 @@
 #include "PIDcontrol.h"
 #include <vector>
 #include <algorithm>
-#include <cmath>
 
 double full = 360;
 double tile = 24;

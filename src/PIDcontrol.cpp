@@ -209,6 +209,7 @@ void go_to(double x, double y)
   double o_dist = sqrt(pow(ox,2) + pow(oy,2));
 
   double dot = ((dx*ox) + (dy*oy)) / (target_dist * o_dist);
+  dot = acos(dot);
 
   if ((closest.empty() || l_obj_dist > o_dist) && dot > th)
   {

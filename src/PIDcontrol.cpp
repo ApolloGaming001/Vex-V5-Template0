@@ -29,7 +29,7 @@ std::vector<std::vector<double>> objects = {
   {3.5,3}
 };
 
-double clamp(double val, double minVal, double maxVal) {
+double clamps(double val, double minVal, double maxVal) {
   return fmax(minVal, fmin(val, maxVal));
 }
 
@@ -45,11 +45,11 @@ void forwd(double multi)
     inte += err * dt;
     deriv = (err - last_err) / dt;
 
-    inte = clamp(inte, -50, 50);
+    inte = clamps(inte, -50, 50);
 
     double pwr = (fwd_p * err) + (fwd_d * deriv) + (fwd_i * inte);
 
-    pwr = clamp(pwr, -12, 12);
+    pwr = clamps(pwr, -12, 12);
     
     Drive.spin(forward,pwr,volt);
 
@@ -86,11 +86,11 @@ void rgt(double multi)
     inte += err*dt;
     deriv = (err-last_err)/dt;
 
-    inte = clamp(inte, -50, 50);
+    inte = clamps(inte, -50, 50);
 
     double pwr = (trn_p*err) + (trn_i*inte) + (trn_d*deriv);
 
-    pwr = clamp(pwr,-12,12);
+    pwr = clamps(pwr,-12,12);
 
     Right.spin(forward,pwr,volt);
     Left.spin(reverse,pwr,volt);
@@ -121,11 +121,11 @@ void d_forwd(double dist)
     inte += err * dt;
     deriv = (err-last_err) / dt;
 
-    inte = clamp(inte, -50, 50);
+    inte = clamps(inte, -50, 50);
 
     double pwr = (fwd_p * err) + (fwd_i * inte) + (fwd_d * deriv);
 
-    pwr = clamp(pwr, -12, 12);
+    pwr = clamps(pwr, -12, 12);
 
     Drive.spin(forward, pwr, volt);
 
@@ -158,11 +158,11 @@ void d_rgt(double ang)
     inte += err * dt;
     deriv = (err - last_err) / dt;
 
-    inte = clamp(inte, -50, 50);
+    inte = clamps(inte, -50, 50);
     
     double pwr = (err*trn_p) + (inte*trn_i) + (deriv*trn_d);
 
-    pwr = clamp(pwr, -12, 12);
+    pwr = clamps(pwr, -12, 12);
 
     Right.spin(forward, pwr, volt);
     Left.spin(reverse, pwr, volt);
@@ -183,18 +183,19 @@ void d_lft(double ang)
 
 void go_to(double x, double y)
 {
- x = clamp(x, min_xy, max_x);
- y = clamp(y, min_xy, max_y);
- 
+ x = clamps(x, min_xy, max_x);
+ y = clamps(y, min_xy, max_y);
+
  std::vector<double> target_cords = {x,y};
- double dx = target_cords.at(0) - cords.at(0);
- double dy = target_cords.at(1) - cords.at(1);
+ 
+ double dx = x - cords.at(0);
+ double dy = y - cords.at(1);
  double target_dist = sqrt(pow(dx,2) + pow(dy,2));
 
  double heading = Gyroscope.heading(deg);
  double angle = (atan2(dx,dy) * (180/M_PI)) - heading;
 
- double th = 0.95;
+ double th = 0.5;
 
  std::vector<double> closest;
  double l_obj_dist = 1e9;
@@ -205,17 +206,16 @@ void go_to(double x, double y)
 
   double ox = object.at(0) - cords.at(0);
   double oy = object.at(1) - cords.at(1);
-  
-  double o_dist = sqrt(pow(ox,2) + pow(oy,2));
+  double object_dist = sqrt(pow(ox,2) + pow(oy,2));
 
-  double dot = ((dx*ox) + (dy*oy)) / (target_dist * o_dist);
-  dot = acos(dot);
+   double mdot = object_dist * target_dist;
+   double dot = dx*ox + dy*oy / mdot;
 
-  if ((closest.empty() || l_obj_dist > o_dist) && dot > th)
-  {
+   if ((closest.empty() || l_obj_dist < object_dist) && dot < th)
+   {
     closest = object;
-    l_obj_dist = o_dist;
-  }
+    l_obj_dist = object_dist;
+   }
  }
 
  if (!(closest.empty()))

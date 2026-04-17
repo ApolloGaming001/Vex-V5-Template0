@@ -176,65 +176,99 @@ void d_rgt(double ang)
   Drive.stop(hold);
 }
 
-void d_lft(double ang)
-{
-  d_rgt(-ang);
-}
-
 void go_to(double x, double y)
 {
- x = clamps(x, min_xy, max_x);
- y = clamps(y, min_xy, max_y);
+ double rx = x - cords.at(0);
+ double ry = y - cords.at(1);
+ double r_mag = sqrt(pow(rx,2) + pow(ry,2));
+ std::vector<double> dcords = {rx,ry};
 
- std::vector<double> target_cords = {x,y};
- 
- double dx = x - cords.at(0);
- double dy = y - cords.at(1);
- double target_dist = sqrt(pow(dx,2) + pow(dy,2));
-
- double heading = Gyroscope.heading(deg);
- double angle = (atan2(dx,dy) * (180/M_PI)) - heading;
-
- double th = 0.5;
-
+ double lo_dist = 1e9;
+ double th = 0.7;
  std::vector<double> closest;
- double l_obj_dist = 1e9;
+ 
+ double angle;
 
- for (std::vector<double> object : objects)
+ for (std::vector<double> obj : objects)
  {
-  if (target_cords == object) continue;
+  if (obj == dcords) continue;
+  double rox = obj.at(0) - cords.at(0);
+  double roy = obj.at(1) - cords.at(1);
 
-  double ox = object.at(0) - cords.at(0);
-  double oy = object.at(1) - cords.at(1);
-  double object_dist = sqrt(pow(ox,2) + pow(oy,2));
-
-   double mdot = object_dist * target_dist;
-   double dot = dx*ox + dy*oy / mdot;
-
-   if ((closest.empty() || l_obj_dist < object_dist) && dot < th)
-   {
-    closest = object;
-    l_obj_dist = object_dist;
-   }
+  double o_mag = sqrt(pow(rox,2) + pow(roy,2));
+  double dot = (rx*rox) + (ry*roy);
+  double proj = dot / o_mag;
+  
+  if (proj < th || o_mag > r_mag || lo_dist > o_mag) continue;
+  
+  lo_dist = o_mag;
+  closest = obj;
  }
 
- if (!(closest.empty()))
+ if (closest.empty())
  {
-  if (closest.at(1)-1 == 0)
+  angle = atan2(rx,ry);
+  while (angle > 180)  angle -= 360;
+  while (angle < -180)  angle += 360;
+
+  d_rgt(angle);
+  d_forwd(r_mag);
+ } else
+ {
+  std::vector<double> new_pos;
+  bool clear = 0;
+  double dist = 0;
+  bool c = 0;
+  while (!clear)
   {
-    go_to(closest.at(0)+1, closest.at(1));
-  }else
-  {
-    go_to(closest.at(0), closest.at(1)-1);
+    dist ++;
+    c=0;
+    for (int i=0;i<4;i++)
+    {
+      if (clear) break;
+      if (i == 2) c=1;
+      new_pos = closest;
+
+      if (!c)
+      {
+        if (i==0)
+        {
+          new_pos.at(0) = closest.at(0)+dist;
+        }
+
+        if (i==1)
+        {
+          new_pos.at(0) = closest.at(0)-dist;
+        }
+      }
+
+      if (c)
+      {
+        if (i==2)
+        {
+          new_pos.at(1) = closest.at(1)+dist;
+        }
+        
+        if (i==3)
+        {
+          new_pos.at(1) = closest.at(1)-dist;
+        }
+      }
+      for (std::vector<double> obj:objects)
+      {
+        if (new_pos == obj) continue;
+        if (new_pos == cords) continue;
+        if (!(new_pos == obj)) clear = 1; break;
+      }
+    }
+
+    double rnx = closest.at(0) - cords.at(0);
+    double rny = closest.at(1) - cords.at(1);
+    double rn_mag = sqrt(pow(rnx,2) + pow(rny,2));
+
+    angle = atan2(rnx,rny);
+    d_forwd(rn_mag);
+    go_to(x,y);
   }
  }
-
- while (angle < -180) angle += full;
- while (angle > 180) angle -= full;
-
- if (angle > 0) d_lft(angle);
- else d_rgt(angle);
- d_forwd(target_dist);
-
- cords = target_cords;
 }

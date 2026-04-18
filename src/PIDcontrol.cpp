@@ -146,7 +146,7 @@ void d_rever(double dist)
 //reverse coordinate PID
 void d_rgt(double ang)
 {
-  //same as regular rgt except it uses coordinates
+  //same as regular rgt except it uses coordinates and degrees
   double err = 0, inte = 0, deriv = 0, last_err = 0;
   double start = Gyroscope.rotation(deg);
 
@@ -166,8 +166,8 @@ void d_rgt(double ang)
 
     pwr = clamps(pwr, -12, 12);
 
-    Right.spin(forward, pwr, volt);
-    Left.spin(reverse, pwr, volt);
+    Right.spin(reverse, pwr, volt);
+    Left.spin(forward, pwr, volt);
 
     if (fabs(err) < 3) break;
 
@@ -220,6 +220,7 @@ void go_to(double x, double y)
   d_rgt(angle);
   d_forwd(r_mag);
   //turn to the angle using d_rgt and move the bot the relative magnitude
+  cords = dcords;
  } else
  {//if there is an object in the way
   std::vector<double> new_pos;
@@ -240,7 +241,7 @@ void go_to(double x, double y)
       new_pos = closest;
       //reset the new coords to the current object
       if (!c)
-      {//first run the x value
+      {//first, run the x value
         if (i==0)
         {//on the first run
           new_pos.at(0) = closest.at(0)+dist;//add to the x
@@ -253,32 +254,48 @@ void go_to(double x, double y)
       }
 
       if (c)
-      {//second run the y value if the x value isn't clear
+      {//second, run the y value if the x value isn't clear
         if (i==2)
-        {
-          new_pos.at(1) = closest.at(1)+dist;
+        {//on the third run
+          new_pos.at(1) = closest.at(1)+dist;//add to the y
         }
         
         if (i==3)
-        {
-          new_pos.at(1) = closest.at(1)-dist;
+        {//on the fourth run
+          new_pos.at(1) = closest.at(1)-dist;//subract from the y
         }
       }
       for (std::vector<double> obj:objects)
-      {
+      {//loop through all objects
         if (new_pos == obj) continue;
         if (new_pos == cords) continue;
-        if (!(new_pos == obj)) clear = 1; break;
+        //if the new position is either equal to the current coordinate or if its equal to the objects position then continue
+        double rox = obj.at(0) - cords.at(0);
+        double roy = obj.at(0) - cords.at(0);
+        double ro_mag = sqrt(pow(rox,2) + pow(roy,2));
+        //define the relative object x,y and magnitude
+        double rnx = new_pos.at(0) - cords.at(0);
+        double rny = new_pos.at(1) - cords.at(1);
+        //define the relative new x, and y
+        double dot = ((rox*rnx) + (roy*rny)) / ro_mag;
+        //define the dot
+        if (dot < th) continue; //if the dot is less than the threshold then continue
+        clear = 1; //else clear is true
+        break; //break the loop
       }
     }
-
-    double rnx = closest.at(0) - cords.at(0);
-    double rny = closest.at(1) - cords.at(1);
-    double rn_mag = sqrt(pow(rnx,2) + pow(rny,2));
-
-    angle = atan2(rnx,rny);
-    d_forwd(rn_mag);
-    go_to(x,y);
   }
+  double rnx = new_pos.at(0) - cords.at(0);
+  double rny = new_pos.at(1) - cords.at(1);
+  double rn_mag = sqrt(pow(rnx,2) + pow(rny,2));
+  angle = atan2(rnx,rny);
+  //define the relative new x, y, magnitude, and the turn angle
+  d_rgt(angle);
+  d_forwd(rn_mag);
+  //turn to the angle and move the new pos magnitude
+  cords = new_pos;
+  go_to(x,y);
+  //update cords and call go_to() again using the same x,y to finally get to the destination
  }
 }
+//ong ts should work but if it doesn't ima eat all of my friend's fried chicken from popeyes.

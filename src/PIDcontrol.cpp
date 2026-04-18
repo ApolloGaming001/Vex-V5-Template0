@@ -220,7 +220,7 @@ void go_to(double x, double y)
   d_rgt(angle);
   d_forwd(r_mag);
   //turn to the angle using d_rgt and move the bot the relative magnitude
-  cords = dcords;
+  cords = {x,y};
  } else
  {//if there is an object in the way
   std::vector<double> new_pos;
@@ -271,7 +271,7 @@ void go_to(double x, double y)
         if (new_pos == cords) continue;
         //if the new position is either equal to the current coordinate or if its equal to the objects position then continue
         double rox = obj.at(0) - cords.at(0);
-        double roy = obj.at(0) - cords.at(0);
+        double roy = obj.at(1) - cords.at(1);
         double ro_mag = sqrt(pow(rox,2) + pow(roy,2));
         //define the relative object x,y and magnitude
         double rnx = new_pos.at(0) - cords.at(0);

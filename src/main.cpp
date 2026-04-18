@@ -17,6 +17,7 @@ void autonomous(void) {
   {
     case 1:
       go_to(2,1);
+      break;
     case 2:
       break;
     case 3:

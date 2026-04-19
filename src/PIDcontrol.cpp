@@ -213,7 +213,7 @@ void go_to(double x, double y)
  if (closest.empty())
  //if there is no object in the way
  {
-  angle = atan2(rx,ry);
+  angle = atan2(rx,ry) * (180/M_PI);
   while (angle > 180)  angle -= 360;
   while (angle < -180)  angle += 360;
   //set the angle to the arc tan of the relative x and y and normalize it
@@ -288,7 +288,7 @@ void go_to(double x, double y)
   double rnx = new_pos.at(0) - cords.at(0);
   double rny = new_pos.at(1) - cords.at(1);
   double rn_mag = sqrt(pow(rnx,2) + pow(rny,2));
-  angle = atan2(rnx,rny);
+  angle = atan2(rnx,rny) * (180/M_PI);
   //define the relative new x, y, magnitude, and the turn angle
   d_rgt(angle);
   d_forwd(rn_mag);

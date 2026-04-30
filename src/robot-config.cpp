@@ -13,7 +13,7 @@ motor l1 = motor(PORT18, ratio6_1);
 motor l2 = motor(PORT19, ratio6_1);
 motor_group Left = motor_group(l1,l2);
 motor_group Drive = motor_group(r1,r2,l1,l2);
-inertial Gyroscope = inertial(PORT15);
+inertial Gyroscope = inertial(PORT21);
 
 void vexcodeInit(void) {
   // Nothing to initialize

@@ -16,7 +16,7 @@ void autonomous(void) {
  switch(switch_int)
   {
     case 1:
-      go_to(2,1);
+      rgt(1);
       break;
     case 2:
       break;

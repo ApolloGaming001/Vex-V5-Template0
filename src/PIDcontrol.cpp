@@ -205,6 +205,7 @@ void go_to(double x, double y)
   if (proj < th || o_mag > r_mag || lo_dist < o_mag) continue;
   //if the projection is greator than the threshold or the object's magnitude is less than the desired magnitude or the last object
   //'s magnitude is less than the object's magnitude then continue to the next object
+  if (o_mag < 1.0) continue; //If the bot is basically touching the object then skip it
   lo_dist = o_mag;
   closest = obj;
   //else the last object's magnitude is equal to the object's magnitude and the closest object is the object
@@ -289,7 +290,9 @@ void go_to(double x, double y)
   double rny = new_pos.at(1) - cords.at(1);
   double rn_mag = sqrt(pow(rnx,2) + pow(rny,2));
   angle = atan2(rnx,rny) * (180/M_PI);
-  //define the relative new x, y, magnitude, and the turn angle
+  while (angle > 180)  angle -= 360;
+  while (angle < -180)  angle += 360;
+  //define the relative new x, y, magnitude, and the turn angle and normalization
   d_rgt(angle);
   d_forwd(rn_mag);
   //turn to the angle and move the new pos magnitude
@@ -297,5 +300,6 @@ void go_to(double x, double y)
   go_to(x,y);
   //update cords and call go_to() again using the same x,y to finally get to the destination
  }
+ Drive.stop(hold);
 }
 //ong ts should work but if it doesn't ima eat all of my friend's fried chicken from popeyes.
